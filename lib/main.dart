@@ -10,7 +10,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({Key? key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -37,7 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late Future<List<Map<String, dynamic>>> futureServoValue;
   late Timer timer;
   late CameraController _controller;
-  Future<void>? _initializeControllerFuture;
+  late Future<void> _initializeControllerFuture;
+  bool switchValue = false;
 
   @override
   void initState() {
@@ -50,6 +51,14 @@ class _MyHomePageState extends State<MyHomePage> {
         futureServoValue = fetchServoValue();
       });
     });
+    _initializeCamera();
+  }
+
+  void _initializeCamera() async {
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
+    _controller = CameraController(firstCamera, ResolutionPreset.medium);
+    _initializeControllerFuture = _controller.initialize();
   }
 
   Future<List<Map<String, dynamic>>> fetchValue() async {
@@ -81,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     timer.cancel(); // Cancel the timer when the widget is disposed
+    _controller.dispose();
     super.dispose();
   }
 
@@ -93,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const SizedBox(height: 20),
             FutureBuilder<List<Map<String, dynamic>>>(
@@ -109,56 +119,41 @@ class _MyHomePageState extends State<MyHomePage> {
                     final Map<String, dynamic> jsonData = dataList[0];
                     final Map<String, dynamic> jsonData1 = dataList[1];
                     final Map<String, dynamic> jsonData2 = dataList[2];
-                    // final distance = jsonData['name'];
                     final temperature = jsonData['value'];
-                    //  temperature.toStringAsFixed(2);
-                    // final measure = jsonData['unit'];
                     final humidity = jsonData1['value'];
                     final heatIndex = jsonData2['value'];
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        //Text('Distance: $distance'),
-
-                        //  SizedBox(width: 10),
-
                         Row(
                           children: [
                             const Icon(Icons.thermostat_outlined),
                             Text(
                               "Temperature ${temperature.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                  fontSize: 18.0), // Adjust font size as needed
+                              style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
                         ),
-                        const SizedBox(
-                            height: 40), // Add a 10-pixel margin between rows
+                        const SizedBox(height: 40),
                         Row(
                           children: [
                             const Icon(Icons.water_drop_outlined),
                             Text(
                               "Humidity ${humidity.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                  fontSize: 18.0), // Adjust font size as needed
+                              style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
                         ),
-                        const SizedBox(
-                            height: 40), // Add another 10-pixel margin
+                        const SizedBox(height: 40),
                         Row(
                           children: [
                             const Icon(Icons.local_fire_department_outlined),
                             Text(
                               "Heat Index:${heatIndex.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                  fontSize: 18.0), // Adjust font size as needed
+                              style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
                         ),
-
-                        //
-                        //
                       ],
                     );
                   } else {
@@ -180,21 +175,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   final List<Map<String, dynamic>> dataList = snapshot.data!;
                   if (dataList.isNotEmpty) {
                     final Map<String, dynamic> jsonData = dataList[0];
-                    // final distance = jsonData['name'];
                     final servovalue = jsonData['value'];
                     final measure = jsonData['unit'];
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         const SizedBox(height: 40),
                         Row(
                           children: [
                             const Icon(Icons.speed_outlined),
-                            //Text('Distance: $distance'),
                             Text(
                               'Value: $servovalue $measure',
-                              style: const TextStyle(
-                                  fontSize: 18.0), // Adjust font size as needed
+                              style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
                         ),
@@ -211,24 +203,43 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      // Additional AppBar for the bottom button
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        margin: const EdgeInsets.only(bottom: 16.0),
-        child: ElevatedButton(
-          onPressed: () async {
-            // Navigate to a new screen for camera preview
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CameraPreviewScreen(
-                  controller: _controller,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.air_outlined),
+                Text(
+                  "",
+                  style: TextStyle(fontSize: 18.0),
                 ),
-              ),
-            );
-          },
-          child: const Text('Open Camera'),
+                const SizedBox(width: 8),
+                Switch(
+                  value: switchValue,
+                  onChanged: (value) {
+                    setState(() {
+                      switchValue = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CameraPreviewScreen(
+                      controller: _controller,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Open Camera'),
+            ),
+          ],
         ),
       ),
     );
@@ -238,8 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
 class CameraPreviewScreen extends StatelessWidget {
   final CameraController controller;
 
-  const CameraPreviewScreen({Key? key, required this.controller})
-      : super(key: key);
+  const CameraPreviewScreen({Key? key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +261,6 @@ class CameraPreviewScreen extends StatelessWidget {
         future: controller.initialize(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            // Display camera preview when Future is complete
             return CameraPreview(controller);
           } else {
             return const Center(child: CircularProgressIndicator());
