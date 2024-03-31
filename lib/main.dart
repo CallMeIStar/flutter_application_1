@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, unused_field, use_key_in_widget_constructors, prefer_const_constructors
+
 import 'dart:convert';
 import 'dart:async';
 
@@ -84,6 +86,28 @@ class _MyHomePageState extends State<MyHomePage> {
       return dataList;
     } else {
       throw Exception('Failed to load value');
+    }
+  }
+
+  Future<void> setFanStatus(bool fanStatus) async {
+    final url = Uri.parse('http://192.168.15.140/setStatus');
+    final headers = {'Content-Type': 'application/json'};
+    String state = "";
+    if(fanStatus){
+       state = '0';
+    }else{
+      state = '1';
+    }
+   final body = json.encode({'fanStatus': state});
+
+    final response = await http.post(url, headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      // Handle success
+      print('Fan status set successfully');
+    } else {
+      // Handle error
+      throw Exception('Failed to set fan status');
     }
   }
 
@@ -221,6 +245,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   onChanged: (value) {
                     setState(() {
                       switchValue = value;
+                      // Call setFanStatus with the appropriate value
+                      setFanStatus(value);
                     });
                   },
                 ),
