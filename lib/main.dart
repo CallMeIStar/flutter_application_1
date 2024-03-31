@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Distance and Temperature Checker',
+      title: 'IOT Control',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(backgroundColor: Colors.blue),
       ),
@@ -94,9 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
     final headers = {'Content-Type': 'application/json'};
     String state = "";
     if(fanStatus){
-       state = '0';
+       state = '1';
     }else{
-      state = '1';
+      state = '0';
     }
    final body = json.encode({'fanStatus': state});
 
@@ -108,6 +108,16 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       // Handle error
       throw Exception('Failed to set fan status');
+    }
+  }
+
+  Icon getWifiIcon(int wifiStrength) {
+    if (wifiStrength < 60) {
+      return const Icon(Icons.wifi);
+    } else if (wifiStrength >= 60 && wifiStrength < 80) {
+      return const Icon(Icons.wifi_2_bar);
+    } else {
+      return const Icon(Icons.wifi_1_bar);
     }
   }
 
@@ -143,9 +153,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     final Map<String, dynamic> jsonData = dataList[0];
                     final Map<String, dynamic> jsonData1 = dataList[1];
                     final Map<String, dynamic> jsonData2 = dataList[2];
+                    final Map<String, dynamic> jsonData3 = dataList[3];
                     final temperature = jsonData['value'];
                     final humidity = jsonData1['value'];
                     final heatIndex = jsonData2['value'];
+                    final wifiStrength = jsonData3['value'];
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -153,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             const Icon(Icons.thermostat_outlined),
                             Text(
-                              "Temperature ${temperature.toStringAsFixed(2)}",
+                              "Temperature ${temperature.toStringAsFixed(2)} °C",
                               style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
@@ -163,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             const Icon(Icons.water_drop_outlined),
                             Text(
-                              "Humidity ${humidity.toStringAsFixed(2)}",
+                              "Humidity ${humidity.toStringAsFixed(2)} %",
                               style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
@@ -173,7 +185,17 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: [
                             const Icon(Icons.local_fire_department_outlined),
                             Text(
-                              "Heat Index:${heatIndex.toStringAsFixed(2)}",
+                              "Heat Index:${heatIndex.toStringAsFixed(2)} °C",
+                              style: const TextStyle(fontSize: 18.0),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
+                        Row(
+                          children: [
+                            getWifiIcon(wifiStrength.abs()),
+                            Text(
+                              "WiFi Strength:${wifiStrength.abs()}",
                               style: const TextStyle(fontSize: 18.0),
                             ),
                           ],
