@@ -1,9 +1,11 @@
-// ignore_for_file: avoid_print, unused_field, use_key_in_widget_constructors, prefer_const_constructors
+// ignore_for_file: unused_field, use_key_in_widget_constructors, avoid_print, prefer_const_constructors, use_super_parameters
 
 import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controller/scan_controller.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:camera/camera.dart';
 
@@ -93,12 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
     final url = Uri.parse('http://192.168.15.140/setStatus');
     final headers = {'Content-Type': 'application/json'};
     String state = "";
-    if(fanStatus){
-       state = '1';
-    }else{
+    if (fanStatus) {
+      state = '1';
+    } else {
       state = '0';
     }
-   final body = json.encode({'fanStatus': state});
+    final body = json.encode({'fanStatus': state});
 
     final response = await http.post(url, headers: headers, body: body);
 
@@ -279,7 +281,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CameraPreviewScreen(
+                    builder: (context) => CameraView(
+                      key: UniqueKey(), // Properly pass the key
                       controller: _controller,
                     ),
                   ),
@@ -294,25 +297,20 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class CameraPreviewScreen extends StatelessWidget {
-  final CameraController controller;
+class CameraView extends StatelessWidget {
+  const CameraView({Key? key, required this.controller}) : super(key: key);
 
-  const CameraPreviewScreen({Key? key, required this.controller});
+  final CameraController controller;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Camera Preview'),
-      ),
-      body: FutureBuilder<void>(
-        future: controller.initialize(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(controller);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: GetBuilder<ScanController>(
+        init: ScanController(),
+        builder: (controller) {
+          return controller.isCameraInitialized.value
+              ? CameraPreview(controller.cameraController)
+              : const Center(child: Text("Loading"));
         },
       ),
     );
