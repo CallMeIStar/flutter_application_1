@@ -308,9 +308,27 @@ class CameraView extends StatelessWidget {
       body: GetBuilder<ScanController>(
         init: ScanController(),
         builder: (controller) {
-          return controller.isCameraInitialized.value
-              ? CameraPreview(controller.cameraController)
-              : const Center(child: Text("Loading"));
+          return Stack(
+            children: [
+              // Camera Preview
+              controller.isCameraInitialized.value
+                  ? CameraPreview(controller.cameraController)
+                  : const Center(child: Text("Loading")),
+              // Detected Object Text Overlay
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: Obx(() => Text(
+                      controller.detectedObject.value,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )),
+              ),
+            ],
+          );
         },
       ),
     );
