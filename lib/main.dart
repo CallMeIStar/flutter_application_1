@@ -134,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Distance and Temperature Checker'),
+        title: const Text('IOT Control'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -156,10 +156,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     final Map<String, dynamic> jsonData1 = dataList[1];
                     final Map<String, dynamic> jsonData2 = dataList[2];
                     final Map<String, dynamic> jsonData3 = dataList[3];
+                 //   final Map<String, dynamic> jsonData4 = dataList[4];
+                 //   final Map<String, dynamic> jsonData5 = dataList[5];
                     final temperature = jsonData['value'];
                     final humidity = jsonData1['value'];
                     final heatIndex = jsonData2['value'];
                     final wifiStrength = jsonData3['value'];
+                //    final distance = jsonData4['value'];
+                 //   final waterLevel = jsonData5['value'];
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -202,6 +206,26 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ],
                         ),
+                                                const SizedBox(height: 40),
+          //              Row(
+          //                children: [
+          //                  const Icon(Icons.local_fire_department_outlined),
+          //                  Text(
+          //                    "Distance:${distance.toStringAsFixed(2)} cm",
+          //                    style: const TextStyle(fontSize: 18.0),
+          //                  ),
+          //                ],
+          //              ),
+          //                                      const SizedBox(height: 40),
+          //              Row(
+          //                children: [
+          //                  const Icon(Icons.local_fire_department_outlined),
+          //                  Text(
+          //                    "Water Level:${waterLevel.toStringAsFixed(2)}",
+          //                    style: const TextStyle(fontSize: 18.0),
+          //                  ),
+          //                ],
+          //              ),
                       ],
                     );
                   } else {
@@ -305,6 +329,9 @@ class CameraView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Camera View'),
+      ),
       body: GetBuilder<ScanController>(
         init: ScanController(),
         builder: (controller) {
