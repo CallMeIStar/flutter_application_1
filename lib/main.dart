@@ -43,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   bool switchValue = false;
+  double sliderValue = 5;
 
   @override
   void initState() {
@@ -91,16 +92,17 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> setFanStatus(bool fanStatus) async {
+  Future<void> setFanStatus() async {
+
     final url = Uri.parse('http://192.168.15.140/setStatus');
     final headers = {'Content-Type': 'application/json'};
     String state = "";
-    if (fanStatus) {
+    if (switchValue) {
       state = '1';
     } else {
       state = '0';
     }
-    final body = json.encode({'fanStatus': state});
+    final body = json.encode({'fanStatus': state,'servoStatus':sliderValue.toString()});
 
     final response = await http.post(url, headers: headers, body: body);
 
@@ -156,14 +158,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     final Map<String, dynamic> jsonData1 = dataList[1];
                     final Map<String, dynamic> jsonData2 = dataList[2];
                     final Map<String, dynamic> jsonData3 = dataList[3];
-                 //   final Map<String, dynamic> jsonData4 = dataList[4];
-                 //   final Map<String, dynamic> jsonData5 = dataList[5];
+                    final Map<String, dynamic> jsonData4 = dataList[4];
+                    final Map<String, dynamic> jsonData5 = dataList[5];
                     final temperature = jsonData['value'];
                     final humidity = jsonData1['value'];
                     final heatIndex = jsonData2['value'];
                     final wifiStrength = jsonData3['value'];
-                //    final distance = jsonData4['value'];
-                 //   final waterLevel = jsonData5['value'];
+                    final distance = jsonData4['value'];
+                    final waterLevel = jsonData5['value'];
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -206,26 +208,46 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ],
                         ),
-                                                const SizedBox(height: 40),
-          //              Row(
-          //                children: [
-          //                  const Icon(Icons.local_fire_department_outlined),
-          //                  Text(
-          //                    "Distance:${distance.toStringAsFixed(2)} cm",
-          //                    style: const TextStyle(fontSize: 18.0),
-          //                  ),
-          //                ],
-          //              ),
-          //                                      const SizedBox(height: 40),
-          //              Row(
-          //                children: [
-          //                  const Icon(Icons.local_fire_department_outlined),
-          //                  Text(
-          //                    "Water Level:${waterLevel.toStringAsFixed(2)}",
-          //                    style: const TextStyle(fontSize: 18.0),
-          //                  ),
-          //                ],
-          //              ),
+                        const SizedBox(height: 40),
+                        Row(
+                          children: [
+                            const Icon(Icons.rule_rounded),
+                            Text(
+                              "Distance:${distance.toStringAsFixed(2)} cm",
+                              style: const TextStyle(fontSize: 18.0),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
+                        Row(
+                          children: [
+                            const Icon(Icons.local_fire_department_outlined),
+                            Text(
+                              "Water Level:${waterLevel.toStringAsFixed(2)}",
+                              style: const TextStyle(fontSize: 18.0),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
+                        Row(
+                          children: [
+                            Slider(
+                              value: sliderValue,
+                              min: 5,
+                              max: 1023,
+                              divisions:
+                                  1018, // Number of divisions between min and max
+                              label: sliderValue.round().toString(),
+                              onChanged: (double value) {
+                                setState(() {
+                                  sliderValue = value;
+                                  setFanStatus();
+
+                                });
+                              },
+                            ),
+                          ],
+                        )
                       ],
                     );
                   } else {
@@ -294,7 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     setState(() {
                       switchValue = value;
                       // Call setFanStatus with the appropriate value
-                      setFanStatus(value);
+                      setFanStatus();
                     });
                   },
                 ),
